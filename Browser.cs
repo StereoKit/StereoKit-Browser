@@ -80,10 +80,14 @@ public class Browser
 		Hand      h  = Input.Hand(hand);
 		HandJoint j  = h[FingerId.Index, JointId.Tip];
 		Plane     p  = new Plane(V.XYZ(bounds.center.x, bounds.center.y, bounds.center.z - bounds.dimensions.z / 2), Vec3.Forward);
-		Vec3      at = p.Closest(j.position);
+		Vec3      at = p.Closest( Hierarchy.ToLocal( j.position ));
+
+		Mesh.Sphere.Draw(Material.Default, Matrix.TS(at, 0.01f));
 
 		Vec3 pt = (at - (bounds.center + (bounds.dimensions*0.5f)));
-		pt = new Vec3(1-(-pt.x / bounds.dimensions.x), -pt.y / bounds.dimensions.y, 0);
+		pt = new Vec3(-pt.x / bounds.dimensions.x, -pt.y / bounds.dimensions.y, 0);
+
+		Log.Info(pt.ToString());
 
 		return new TouchPoint {
 			X = pt.x * browser.Size.Width,
@@ -126,14 +130,18 @@ public class Browser
 					.GetDevToolsClient()
 					.Input
 					.DispatchTouchEventAsync(DispatchTouchEventType.TouchMove, new TouchPoint[] { pt });
+				prevAt = currAt;
 			}
-			prevAt = currAt;
 		}
 		if (state.IsJustInactive()) {
+			TouchPoint pt = new TouchPoint {
+				X = prevAt.x,
+				Y = prevAt.y,
+			};
 			browser
 				.GetDevToolsClient()
 				.Input
-				.DispatchTouchEventAsync(DispatchTouchEventType.TouchEnd, new TouchPoint[] { TouchPoint(bounds, hand) });
+				.DispatchTouchEventAsync(DispatchTouchEventType.TouchEnd, new TouchPoint[] { pt });
 		}
 	}
 

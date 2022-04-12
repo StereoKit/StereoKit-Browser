@@ -82,12 +82,10 @@ public class Browser
 		Plane     p  = new Plane(V.XYZ(bounds.center.x, bounds.center.y, bounds.center.z - bounds.dimensions.z / 2), Vec3.Forward);
 		Vec3      at = p.Closest( Hierarchy.ToLocal( j.position ));
 
-		Mesh.Sphere.Draw(Material.Default, Matrix.TS(at, 0.01f));
+		//Mesh.Sphere.Draw(Material.Default, Matrix.TS(at, 0.01f));
 
 		Vec3 pt = (at - (bounds.center + (bounds.dimensions*0.5f)));
 		pt = new Vec3(-pt.x / bounds.dimensions.x, -pt.y / bounds.dimensions.y, 0);
-
-		Log.Info(pt.ToString());
 
 		return new TouchPoint {
 			X = pt.x * browser.Size.Width,

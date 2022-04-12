@@ -26,6 +26,20 @@ SK.Run(() => {
 			: Matrix.TS(0, -1.5f, 0, new Vec3(30, 0.1f, 30)));
 
 	UI.WindowBegin("Browser", ref windowPose, V.XY(0.6f,0));
+	UI.PushEnabled(browser.HasBack);
+	if (UI.Button("Back")) browser.Back();
+	UI.PopEnabled();
+
+	UI.SameLine();
+	UI.PushEnabled(browser.HasForward);
+	if (UI.Button("Forward")) browser.Forward();
+	UI.PopEnabled();
+
+	UI.SameLine();
+	UI.Label(browser.Url, V.XY(UI.LayoutRemaining.x, 0));
+
+	UI.HSeparator();
+
 	browser.StepAsUI();
 	UI.WindowEnd();
 

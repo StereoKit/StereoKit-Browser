@@ -10,8 +10,21 @@ namespace StereoKit.Framework;
 
 public class Browser
 {
+	class NoNewTabLifeSpanHandler : ILifeSpanHandler
+	{
+		public bool DoClose       (IWebBrowser chromiumWebBrowser, IBrowser browser) => true;
+		public void OnAfterCreated(IWebBrowser chromiumWebBrowser, IBrowser browser) { }
+		public void OnBeforeClose (IWebBrowser chromiumWebBrowser, IBrowser browser) { }
+		public bool OnBeforePopup (IWebBrowser chromiumWebBrowser, IBrowser browser, IFrame frame, string targetUrl, string targetFrameName, WindowOpenDisposition targetDisposition, bool userGesture, IPopupFeatures popupFeatures, IWindowInfo windowInfo, IBrowserSettings browserSettings, ref bool noJavascriptAccess, out IWebBrowser newBrowser)
+		{
+			browser.MainFrame.LoadUrl(targetUrl);
+			newBrowser = null;
+			return true;
+		}
+	}
+
 	public Tex    Texture { get; internal set; }
-	public string Url     { get => url; set { url = value; if (browser != null) browser.LoadUrl(url); } }
+	public string Url     { get => browser == null ? url : browser.Address; set { url = value; if (browser != null) browser.LoadUrl(url); } }
 
 	ChromiumWebBrowser browser;
 	Tex[]  tex;
@@ -52,6 +65,7 @@ public class Browser
 		await browser.WaitForInitialLoadAsync();
 		browser.Paint += Browser_Paint;
 		browserAspect = browser.Size.Height / (float)browser.Size.Width;
+		browser.LifeSpanHandler = new NoNewTabLifeSpanHandler();
 	}
 
 	private void Browser_Paint(object sender, OnPaintEventArgs e)
@@ -122,4 +136,9 @@ public class Browser
 				.DispatchTouchEventAsync(DispatchTouchEventType.TouchEnd, new TouchPoint[] { TouchPoint(bounds, hand) });
 		}
 	}
+
+	public bool HasForward => browser == null ? false : browser.CanGoForward;
+	public bool HasBack => browser == null ? false : browser.CanGoBack;
+	public void Back() => browser?.Back();
+	public void Forward() => browser?.Forward();
 }
